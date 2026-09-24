@@ -1,0 +1,27 @@
+# resa-map: lê (somente leitura) o Postgres do resa-survey, que vive na rede
+# Docker da aplicação resa-survey no Coolify (bs8x9x7vbjwvqpwnxwhvyiu1).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - ACCESS_CODE=${ACCESS_CODE}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - default
+      - resa-survey
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/api/health']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+networks:
+  resa-survey:
+    external: true
+    name: bs8x9x7vbjwvqpwnxwhvyiu1

@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css" layer(base);
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --color-forest-950: #06231A;
+  --color-forest-900: #0F3D2E;
+  --color-forest-800: #14532D;
+  --color-forest-700: #166534;
+  --color-forest-600: #1D8F47;
+  --color-forest-500: #22A352;
+  --color-forest-400: #4ADE80;
+  --color-forest-100: #DCFCE7;
+  --color-forest-50: #F0FDF4;
+  --color-sand-50: #FAF9F6;
+  --color-sand-100: #F3F1EB;
+  --color-sand-200: #E7E3D8;
+  --color-sand-300: #D6D0BF;
+  --color-ink-900: #1B1B1F;
+  --color-ink-600: #55555C;
+  --color-ink-400: #8A8A92;
+  --color-cerrado: #D4870A;
+  --color-amazonia: #1D8F47;
+  --color-pantanal: #0F766E;
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-sand-50);
+  color: var(--color-ink-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+input, select, textarea, button { font-family: inherit; }
+
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.18) transparent; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 999px; }
+
+/* MapLibre tweaks */
+.maplibregl-ctrl-group { border-radius: 10px !important; box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important; overflow: hidden; }
+.maplibregl-ctrl-group button { width: 34px !important; height: 34px !important; }
+.maplibregl-popup-content { border-radius: 12px !important; padding: 0 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.18) !important; font-family: var(--font-sans); overflow: hidden; }
+.maplibregl-popup-close-button { display: none; }
+.maplibregl-ctrl-attrib { font-size: 10px !important; }
+.maplibregl-ctrl-scale { border-color: rgba(0,0,0,0.5) !important; background: rgba(255,255,255,0.7) !important; font-size: 10px !important; }
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-up { animation: fade-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+@keyframes pulse-ring { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(2.2); opacity: 0; } }
