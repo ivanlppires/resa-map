@@ -1,7 +1,6 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { sql } from './db.js'
-import { requireAccess } from './access.js'
 import { loadDataset, loadQuestions, loadSurveys, parseIds, type QuestionRow, type SurveyRow } from './data.js'
 import { buildCsv, buildTable, type CsvQuestion, type CsvSurveyRow } from './lib/csv.js'
 import { buildXlsx } from './lib/xlsx.js'
@@ -71,7 +70,8 @@ function stamp(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-export async function apiRoutes(app: FastifyInstance): Promise<void> {
+export async function apiRoutes(app: FastifyInstance, opts: { requireAuth: (request: FastifyRequest, reply: FastifyReply) => Promise<void> }): Promise<void> {
+  const requireAccess = opts.requireAuth
   app.get('/api/health', async () => {
     try {
       await sql`select 1`

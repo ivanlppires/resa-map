@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { Layers, SlidersHorizontal, BarChart3, Info, PanelLeftClose, PanelLeftOpen, LogOut, RefreshCw } from 'lucide-react'
+import { Layers, SlidersHorizontal, BarChart3, Info, PanelLeftClose, PanelLeftOpen, LogOut, RefreshCw, UserRound } from 'lucide-react'
 import MapView, { defaultLayers, type BasemapId, type Focus, type LayerVisibility } from '../components/MapView'
 import LayerPanel from '../components/LayerPanel'
 import FilterPanel from '../components/FilterPanel'
@@ -8,12 +8,13 @@ import DashboardPanel from '../components/DashboardPanel'
 import DetailDrawer from '../components/DetailDrawer'
 import Legend from '../components/Legend'
 import ExportMenu from '../components/ExportMenu'
-import AccessGate from '../components/AccessGate'
+import LoginGate from '../components/LoginGate'
 import SearchBox, { type SearchHit } from '../components/SearchBox'
 import AboutModal from '../components/AboutModal'
 import { Spinner } from '../components/ui'
 import { api, ApiError } from '../lib/api'
-import type { Dataset, PlacedSurvey } from '../lib/types'
+import type { Dataset, PlacedSurvey, SessionUser } from '../lib/types'
+import { ROLE_LABELS } from '../lib/types'
 import { placeSettlements, placeSurveys, type FeatureCollection } from '../lib/geo'
 import { applyFilters, describeFilters, emptyFilters, activeFilterCount, type Filters } from '../lib/filters'
 import { colorScheme, type SymbolVar } from '../lib/colors'
@@ -29,6 +30,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 
 export default function MapPage() {
   const [session, setSession] = useState<'checking' | 'denied' | 'ok'>('checking')
+  const [user, setUser] = useState<SessionUser | null>(null)
   const [data, setData] = useState<Dataset | null>(null)
   const [municipios, setMunicipios] = useState<FeatureCollection | null>(null)
   const [error, setError] = useState('')
@@ -45,7 +47,8 @@ export default function MapPage() {
 
   const load = useCallback(async () => {
     try {
-      const d = await api.data()
+      const [me, d] = await Promise.all([api.me(), api.data()])
+      setUser(me.user)
       setData(d)
       setSession('ok')
     } catch (err) {
@@ -101,7 +104,7 @@ export default function MapPage() {
     setFocus({ kind: 'bounds', bounds: [[Math.min(...lngs) - pad, Math.min(...lats) - pad], [Math.max(...lngs) + pad, Math.max(...lats) + pad]], nonce: Date.now() })
   }
 
-  if (session === 'denied') return <AccessGate onGranted={() => { setSession('checking'); load() }} />
+  if (session === 'denied') return <LoginGate onLogin={(u) => { setUser(u); setSession('checking'); load() }} />
   if (session === 'checking' || !data) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center bg-forest-950 text-white gap-3">
@@ -125,7 +128,14 @@ export default function MapPage() {
           <button type="button" onClick={fitAll} title="Enquadrar recorte" className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white"><RefreshCw size={16} /></button>
           <button type="button" onClick={() => setAbout(true)} title="Sobre" className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white"><Info size={17} /></button>
           <ExportMenu ids={filtered.map((s) => s.id)} filterSummary={filterSummary} total={allSurveys.length} />
-          <button type="button" onClick={async () => { await api.logout(); setSession('denied') }} title="Sair" className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"><LogOut size={16} /></button>
+          {user && (
+            <span className="hidden lg:inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-[12px] text-white/85" title={user.email}>
+              <UserRound size={14} className="text-forest-400" />
+              <span className="font-semibold">{user.name}</span>
+              <span className="text-white/50">· {ROLE_LABELS[user.role]}</span>
+            </span>
+          )}
+          <button type="button" onClick={async () => { await api.logout(); setUser(null); setData(null); setSession('denied') }} title={user ? `Sair (${user.email})` : 'Sair'} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"><LogOut size={16} /></button>
         </div>
       </header>
 

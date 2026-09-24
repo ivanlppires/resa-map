@@ -4,7 +4,8 @@ import Fastify from 'fastify'
 import fastifyCookie from '@fastify/cookie'
 import fastifyStatic from '@fastify/static'
 import { ZodError } from 'zod'
-import { accessRoutes } from './access.js'
+import { buildAuth } from './auth.js'
+import { findUserByEmail } from './data.js'
 import { apiRoutes } from './routes.js'
 
 const app = Fastify({ logger: true })
@@ -17,9 +18,20 @@ app.setErrorHandler((error: Error & { statusCode?: number }, _request, reply) =>
   reply.status(error.statusCode ?? 500).send({ error: error.message })
 })
 
+const sessionSecret = process.env.SESSION_SECRET
+if (!sessionSecret && process.env.NODE_ENV === 'production') {
+  app.log.error('SESSION_SECRET é obrigatório em produção')
+  process.exit(1)
+}
+const auth = buildAuth({
+  findUserByEmail,
+  secret: sessionSecret ?? 'resa-map-dev-secret',
+  secure: process.env.NODE_ENV === 'production',
+})
+
 await app.register(fastifyCookie)
-await app.register(accessRoutes)
-await app.register(apiRoutes)
+await app.register(auth.routes)
+await app.register(apiRoutes, { requireAuth: auth.requireAuth })
 
 // Em produção o próprio servidor serve o build do frontend (STATIC_DIR).
 const staticDir = process.env.STATIC_DIR

@@ -20,7 +20,9 @@ read-only role in `server/.env` (see `.env.example`). There is no local seed; th
 
 ## Architecture
 
-- `server/` — Fastify 5. `access.ts` = shared access-code gate (HMAC cookie; `ACCESS_CODE` empty → open). `data.ts` = SQL
+- `server/` — Fastify 5. `auth.ts` = login with the resa-survey `users` table (bcrypt compare on `password_hash`, HMAC-signed
+  httpOnly cookie `resa_map_session`, 30 days; `buildAuth({findUserByEmail, secret, secure})` returns `routes` + `requireAuth`
+  so tests inject a fake finder — see `auth.test.ts`, run with `npm test`). `data.ts` = SQL
   loaders (postgres-js, raw SQL, no ORM). `routes.ts` = `/api/data`, `/api/stats` (public), exports (`csv|xlsx|geojson`) and
   `report.pdf`. `lib/pdf.ts`, `lib/xlsx.ts`, `lib/csv.ts` are dependency-free generators copied from resa-survey;
   `lib/report.ts` builds the aggregated territorial report (bar charts drawn with rects).
@@ -30,6 +32,7 @@ read-only role in `server/.env` (see `.env.example`). There is no local seed; th
   `lib/filters.ts`, `lib/stats.ts`; colors in `lib/colors.ts`; placement of settlements/no-GPS interviews in `lib/geo.ts`.
 - Surveys without GPS are placed in a ring around the settlement centroid and flagged `approx` (gray stroke, legend note).
   Settlement "areas" are reference circles (INCRA polygons not yet integrated).
+- There is no user registration here; passwords are managed in resa-survey. All roles can use the whole platform.
 - Exports take the filtered `ids` list (`?ids=1,2,3`), so server and client never need to share filter semantics.
 
 ## Conventions / gotchas

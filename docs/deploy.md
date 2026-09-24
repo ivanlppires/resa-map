@@ -13,8 +13,7 @@
 | Nome | Valor |
 |---|---|
 | `DATABASE_URL` | `postgresql://resa_map_ro:<senha>@db:5432/resa_survey` |
-| `ACCESS_CODE` | código compartilhado que libera o mapa |
-| `SESSION_SECRET` | string aleatória longa |
+| `SESSION_SECRET` | string aleatória longa (assina o cookie de sessão do login) |
 
 A role `resa_map_ro` foi criada em 2026-09-24 com `GRANT SELECT ON ALL TABLES IN SCHEMA public` + `ALTER DEFAULT PRIVILEGES`
 (tabelas novas do resa-survey também ficam legíveis). Ela **não** consegue escrever.
@@ -42,6 +41,11 @@ ssh root@179.197.236.155 'docker ps --format "{{.Names}}\t{{.Status}}" | grep re
 - `docker_compose_domains` só pode ser gravado depois que o Coolify conhece o compose: enviar `docker_compose_raw`
   (conteúdo do `docker-compose.yml`) junto no mesmo `PATCH`, ou deployar uma vez antes.
 - Domínio via `PATCH /api/v1/applications/<uuid>` com `{"docker_compose_domains":[{"name":"app","domain":"https://resa.laegc.com.br"}]}`.
+
+## Login
+
+Mesmos usuários do RESA Survey: o resa-map confere e-mail/senha direto na tabela `users` (bcrypt) — nada precisa ser
+sincronizado. `ACCESS_CODE` (portão por código do MVP inicial) foi removido em 2026-09-24.
 
 ## Rede com o banco do resa-survey
 

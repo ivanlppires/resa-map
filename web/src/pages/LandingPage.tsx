@@ -140,7 +140,7 @@ export default function LandingPage() {
           </div>
           <div className="mt-12 flex flex-wrap items-center gap-4">
             <Link to="/mapa" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[15px] font-semibold text-forest-900 hover:bg-forest-50 transition-colors">Abrir o mapa <ArrowRight size={17} /></Link>
-            <span className="text-[13px] text-white/55">Acesso restrito à equipe do projeto nesta fase (código de acesso).</span>
+            <span className="text-[13px] text-white/55">Acesso com o mesmo login (e-mail e senha) do aplicativo RESA Survey.</span>
           </div>
         </div>
       </section>

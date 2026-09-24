@@ -4,7 +4,7 @@ Interface de navegação em mapa para os dados coletados pelo [RESA Survey](http
 no projeto **RESA** (Viabilidade Econômica de Assentamentos Rurais nos Três Biomas de Mato Grosso — UNEMAT / LAEGC).
 Inspirada na [Plataforma da Fundação Florestal (SP)](https://plataforma.fflorestal.sp.gov.br/).
 
-Produção: **https://resa.laegc.com.br** (landing page) · **https://resa.laegc.com.br/mapa** (plataforma, código de acesso).
+Produção: **https://resa.laegc.com.br** (landing page) · **https://resa.laegc.com.br/mapa** (plataforma; login com os mesmos usuários do RESA Survey).
 
 ## O que faz
 
@@ -32,7 +32,7 @@ Produção: **https://resa.laegc.com.br** (landing page) · **https://resa.laegc
 npm install
 # túnel para o banco de produção (somente leitura) — ou aponte DATABASE_URL para um Postgres local
 ssh -N -L 15432:10.0.2.3:5432 root@179.197.236.155 &
-cp server/.env.example server/.env   # ajuste DATABASE_URL / ACCESS_CODE
+cp server/.env.example server/.env   # ajuste DATABASE_URL / SESSION_SECRET
 npm run dev            # API em :3100 (tsx watch) + Vite em :5180 com proxy /api
 ```
 
@@ -44,16 +44,20 @@ serve tudo em uma porta só.
 | Nome | Descrição |
 |---|---|
 | `DATABASE_URL` | Postgres do resa-survey. Em produção usa a role **`resa_map_ro`** (somente SELECT) via rede Docker `bs8x9x7vbjwvqpwnxwhvyiu1`, host `db`. |
-| `ACCESS_CODE` | Código compartilhado que libera `/mapa` e `/api/data|export|report`. Vazio = acesso aberto. |
-| `SESSION_SECRET` | Segredo do cookie de acesso. |
+| `SESSION_SECRET` | Segredo (HMAC) do cookie de sessão. Obrigatório em produção. |
 | `STATIC_DIR` | Pasta do build do frontend servida pelo Fastify (produção). |
 | `PORT` | Porta (3000 no container, 3100 em dev). |
+
+## Autenticação
+
+Não há cadastro próprio: qualquer usuário do RESA Survey (`admin`, `interviewer` ou `viewer`) entra com o mesmo e-mail e
+senha, porque o resa-map lê a tabela `users` do mesmo banco. Senhas são trocadas/redefinidas no RESA Survey.
 
 ## API
 
 - `GET /api/health` — status e conexão com o banco.
 - `GET /api/stats` — números agregados públicos (landing page).
-- `POST /api/access {code}` / `GET /api/session` / `POST /api/logout` — portão de acesso.
+- `POST /api/auth/login {email, password}` / `GET /api/auth/me` / `POST /api/auth/logout` — login com os usuários do resa-survey (e-mail + senha conferidos no `users.password_hash`, bcrypt); sessão em cookie httpOnly assinado.
 - `GET /api/data` — perguntas, assentamentos e entrevistas sincronizadas (respostas achatadas).
 - `GET /api/export.csv|xlsx|geojson?ids=1,2,3` — exportação do recorte.
 - `GET /api/report.pdf?ids=…&filters=…&title=…` — relatório territorial agregado.

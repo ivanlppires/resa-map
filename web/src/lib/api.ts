@@ -1,4 +1,4 @@
-import type { Dataset } from './types'
+import type { Dataset, SessionUser } from './types'
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message) }
@@ -15,11 +15,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  session: () => request<{ ok: boolean; open: boolean }>('/api/session'),
-  access: (code: string) => request<{ ok: boolean }>('/api/access', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }),
+  me: () => request<{ user: SessionUser }>('/api/auth/me'),
+  login: (email: string, password: string) => request<{ user: SessionUser }>('/api/auth/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }),
   }),
-  logout: () => request<{ ok: boolean }>('/api/logout', { method: 'POST' }),
+  logout: () => request<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
   data: () => request<Dataset>('/api/data'),
 }
 

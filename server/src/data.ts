@@ -37,6 +37,15 @@ export interface SurveyRow {
   texts: Record<string, string>
 }
 
+export interface UserRow { id: number; name: string; email: string; role: 'admin' | 'interviewer' | 'viewer'; passwordHash: string }
+
+/** Usuário do RESA Survey pelo e-mail (comparação sem distinguir caixa). */
+export async function findUserByEmail(email: string): Promise<UserRow | null> {
+  const [row] = await sql<{ id: number; name: string; email: string; role: UserRow['role']; password_hash: string }[]>`
+    select id, name, email, role, password_hash from users where lower(email) = ${email.toLowerCase()} limit 1`
+  return row ? { id: row.id, name: row.name, email: row.email, role: row.role, passwordHash: row.password_hash } : null
+}
+
 export interface Dataset {
   generatedAt: string
   questions: QuestionRow[]

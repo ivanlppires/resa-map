@@ -41,6 +41,10 @@ export interface Survey {
   texts: Record<string, string>
 }
 
+export type Role = 'admin' | 'interviewer' | 'viewer'
+export interface SessionUser { id: number; name: string; email: string; role: Role }
+export const ROLE_LABELS: Record<Role, string> = { admin: 'Administrador', interviewer: 'Entrevistador', viewer: 'Visualizador' }
+
 export interface Dataset {
   generatedAt: string
   questions: Question[]
